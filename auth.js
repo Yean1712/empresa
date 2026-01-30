@@ -1,4 +1,4 @@
-// CONFIGURACIÓN (Mantener tus credenciales actuales)
+// CONFIGURACIÓN DE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyD5mkWosoBhPzxVLRk8b4xlEVRinEs_3xk",
   authDomain: "miweb-ee0a7.firebaseapp.com",
@@ -9,6 +9,7 @@ const firebaseConfig = {
   measurementId: "G-HZ05NQ26CJ"
 };
 
+// Inicialización segura
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -20,7 +21,7 @@ function acceder() {
     const pass = document.getElementById('password').value;
     firebase.auth().signInWithEmailAndPassword(email, pass)
         .then(() => { window.location.href = "index.html"; })
-        .catch(() => alert("❌ Error en los datos"));
+        .catch((error) => alert("❌ Error: " + error.message));
 }
 
 // --- REGISTRO CORREGIDO ---
@@ -33,7 +34,7 @@ function nuevoRegistro() {
 
     firebase.auth().createUserWithEmailAndPassword(email, pass)
         .then((userCredential) => {
-            // Guardamos el rol como "user" por defecto
+            // Guardar datos en Firestore antes de redirigir
             return db.collection("usuarios").doc(userCredential.user.uid).set({
                 nombre: nombre,
                 email: email,
@@ -47,30 +48,35 @@ function nuevoRegistro() {
         .catch((error) => alert("Error: " + error.message));
 }
 
-// --- MONITOR DE SESIÓN ---
+// --- MONITOR DE SESIÓN Y ROLES ---
 firebase.auth().onAuthStateChanged((user) => {
     const authLink = document.getElementById('auth-link');
     const path = window.location.pathname;
 
     if (user) {
         db.collection("usuarios").doc(user.uid).get().then((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                if (authLink) {
-                    authLink.innerHTML = `Hola, ${data.nombre} (Salir)`;
-                    authLink.onclick = () => firebase.auth().signOut().then(() => location.href="login.html");
-                    
-                    if (data.role === "admin" && (path.includes("index.html") || path === "/")) {
-                        authLink.innerHTML += ` | <a href="admin.html" style="color:#34c759; margin-left:5px;">Panel</a>`;
-                    }
-                }
+            let nombreUsuario = "Ninja";
+            let userRole = "user";
 
-                if (path.includes("admin.html")) {
-                    if (data.role === "admin") {
-                        document.body.style.display = "block"; 
-                    } else {
-                        window.location.href = "index.html";
-                    }
+            if (doc.exists) {
+                nombreUsuario = doc.data().nombre || "Ninja";
+                userRole = doc.data().role || "user";
+            }
+
+            if (authLink) {
+                authLink.innerHTML = `Hola, ${nombreUsuario} (Salir)`;
+                authLink.onclick = () => firebase.auth().signOut().then(() => location.href="login.html");
+                
+                if (userRole === "admin" && (path.includes("index.html") || path === "/")) {
+                    authLink.innerHTML += ` | <a href="admin.html" style="color:#34c759; margin-left:5px; text-decoration:none;">Panel</a>`;
+                }
+            }
+
+            if (path.includes("admin.html")) {
+                if (userRole === "admin") {
+                    document.body.style.display = "block"; 
+                } else {
+                    window.location.href = "index.html";
                 }
             }
         });

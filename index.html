@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Store | Inicio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="welcome-screen">
+        <div style="text-align: center;">
+            <img src="logo.jpg" alt="Logo" class="main-logo-anim">
+            <h1 style="font-size: 1.5rem; color: white; margin-top: 15px;">NINJA<span style="color:#0071e3;">STORE</span></h1>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <header>
+    <nav>
+        <div class="logo"><img src="logo.jpg" class="nav-logo"> NINJA STORE</div>
+        <div class="nav-links">
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="login.html" id="auth-link">Entrar</a> 
+        </div>
+    </nav>
+</header>
+
+        <section class="hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-text">
+                <h1>Tu estilo al día</h1>
+                <p>Equipos originales con garantía oficial.</p>
+                <div class="btn-container">
+                    <a href="catalogo.html" class="btn-primary">Ver Catálogo</a>
+                    <a href="https://wa.me/584149796160" class="btn-secondary" target="_blank">WhatsApp</a>
+                </div>
+            </div>
+
+            <div class="ubicacion-flotante">
+                <a href="https://maps.google.com" target="_blank" class="sede-link">📍 C.C Haack Center, Piso 1, Local B5</a>
+                <a href="https://maps.google.com" target="_blank" class="sede-link">📍 C.C Jabreco Center, P/B, Local 9</a>
+                <p style="font-size: 9px; margin-top: 10px; color: #0071e3; font-weight: 700;">
+                   <i class="fab fa-instagram"></i> @ninjastoreve | Valera, Trujillo
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            }, 1200);
+        };
+    </script>
+</body>
+</html>

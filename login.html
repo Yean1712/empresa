@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Store | Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; margin: 0;">
+
+    <div class="product-card" style="width: 90%; max-width: 400px; padding: 40px 30px; background: #080808; text-align: center; border-radius: 20px; border: 1px solid #1a1a1a;">
+        
+        <div style="margin-bottom: 30px;">
+            <img src="logo.jpg" style="width: 120px; height: auto; mix-blend-mode: screen; margin-bottom: 10px;">
+            <h1 style="color: white; font-size: 1.8rem;">Cuenta Ninja</h1>
+        </div>
+
+        <div style="text-align: left;">
+            <input type="email" id="email" placeholder="Correo electrónico" 
+                   style="width: 100%; padding: 14px; margin-bottom: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 12px; outline: none; box-sizing: border-box;">
+            
+            <input type="password" id="password" placeholder="Contraseña" 
+                   style="width: 100%; padding: 14px; margin-bottom: 25px; background: #121212; border: 1px solid #333; color: white; border-radius: 12px; outline: none; box-sizing: border-box;">
+        </div>
+
+        <button onclick="acceder()" class="btn-primary" style="width: 100%; margin-bottom: 12px; padding: 16px; border-radius: 12px; cursor: pointer;">
+            Iniciar Sesión
+        </button>
+        
+        <button onclick="window.location.href='registro.html'" 
+                style="width: 100%; padding: 14px; background: transparent; border: 1px solid #0071e3; color: #0071e3; border-radius: 12px; cursor: pointer; font-weight: 500;">
+            Crear Nueva Cuenta
+        </button>
+        
+        <p id="status-msg" style="color: #ff3b30; font-size: 0.8rem; margin-top: 15px;"></p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

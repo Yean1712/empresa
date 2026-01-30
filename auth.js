@@ -9,32 +9,23 @@ const firebaseConfig = {
   measurementId: "G-HZ05NQ26CJ"
 };
 
-// Inicialización global segura
+// Inicialización global
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 
-// --- LOGIN ---
-function acceder() {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
-    firebase.auth().signInWithEmailAndPassword(email, pass)
-        .then(() => { window.location.href = "index.html"; })
-        .catch((error) => alert("❌ Error: " + error.message));
-}
-
-// --- REGISTRO CORREGIDO ---
+// --- FUNCIÓN: REGISTRO ---
 function nuevoRegistro() {
     const nombre = document.getElementById('nombreReal').value;
     const email = document.getElementById('email').value;
     const pass = document.getElementById('password').value;
 
-    if (!nombre || !email || !pass) return alert("Llena todos los campos");
+    if (!nombre || !email || !pass) return alert("Por favor, completa todos los campos.");
 
     firebase.auth().createUserWithEmailAndPassword(email, pass)
         .then((userCredential) => {
-            // Guardar en la colección 'usuarios' ANTES de redirigir
+            // Guardamos el nombre en Firestore vinculado al UID del usuario
             return db.collection("usuarios").doc(userCredential.user.uid).set({
                 nombre: nombre,
                 email: email,
@@ -42,45 +33,50 @@ function nuevoRegistro() {
             });
         })
         .then(() => { 
-            alert("¡Registro exitoso!");
+            alert("¡Registro exitoso! Bienvenido.");
             window.location.href = "index.html"; 
         })
-        .catch((error) => alert("Error en registro: " + error.message));
+        .catch((error) => alert("Error al registrar: " + error.message));
 }
 
-// --- MONITOR DE SESIÓN Y ROLES ---
+// --- FUNCIÓN: LOGIN ---
+function acceder() {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    firebase.auth().signInWithEmailAndPassword(email, pass)
+        .then(() => { window.location.href = "index.html"; })
+        .catch((error) => alert("❌ Datos incorrectos: " + error.message));
+}
+
+// --- MONITOR DE ESTADO DE SESIÓN ---
 firebase.auth().onAuthStateChanged((user) => {
     const authLink = document.getElementById('auth-link');
     const path = window.location.pathname;
 
     if (user) {
         db.collection("usuarios").doc(user.uid).get().then((doc) => {
-            let nombreMostrar = "Ninja";
-            let userRole = "user";
+            let nombreUsuario = "Usuario";
+            let rolUsuario = "user";
 
             if (doc.exists) {
-                const data = doc.data();
-                nombreMostrar = data.nombre || "Ninja";
-                userRole = data.role || "user";
+                nombreUsuario = doc.data().nombre || "Ninja";
+                rolUsuario = doc.data().role || "user";
             }
 
             if (authLink) {
-                authLink.innerHTML = `Hola, ${nombreMostrar} (Salir)`;
-                authLink.style.display = "inline";
-                authLink.onclick = (e) => {
-                    e.preventDefault();
-                    firebase.auth().signOut().then(() => location.href="login.html");
-                };
-
-                // Mostrar link al Panel solo si es admin
-                if (userRole === "admin" && (path.includes("index.html") || path === "/")) {
-                    authLink.innerHTML += ` | <a href="admin.html" style="color:#34c759; text-decoration:none; margin-left:5px;">Panel</a>`;
+                authLink.innerHTML = `Hola, ${nombreUsuario} (Salir)`;
+                authLink.style.color = "#0071e3";
+                authLink.onclick = () => firebase.auth().signOut().then(() => location.href="login.html");
+                
+                // Si es admin, mostramos botón al panel
+                if (rolUsuario === "admin") {
+                    authLink.innerHTML += ` | <a href="admin.html" style="color:#34c759; text-decoration:none; margin-left:8px;">Panel</a>`;
                 }
             }
 
-            // Seguridad de página de Admin
+            // Seguridad para la página Admin
             if (path.includes("admin.html")) {
-                if (userRole === "admin") {
+                if (rolUsuario === "admin") {
                     document.body.style.display = "block";
                 } else {
                     window.location.href = "index.html";
@@ -88,8 +84,7 @@ firebase.auth().onAuthStateChanged((user) => {
             }
         });
     } else {
-        if (path.includes("admin.html") || path.includes("catalogo.html")) {
-            window.location.href = "login.html";
-        }
+        // Redirigir si intenta entrar a admin sin loguearse
+        if (path.includes("admin.html")) window.location.href = "login.html";
     }
 });

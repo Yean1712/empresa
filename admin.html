@@ -10,10 +10,9 @@
         .admin-card { background: #080808; padding: 30px; border-radius: 20px; border: 1px solid #1a1a1a; margin-bottom: 30px; }
         .form-group input, .form-group select { width: 100%; padding: 12px; margin-bottom: 15px; background: #121212; border: 1px solid #333; color: white; border-radius: 10px; }
         .btn-add { width: 100%; padding: 15px; background: #0071e3; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .prod-list { margin-top: 20px; border-top: 1px solid #222; }
+        .btn-edit { background: #34c759; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-right: 5px; }
+        .btn-del { background: #ff3b30; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
         .prod-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #111; align-items: center; }
-        .btn-del { background: #ff3b30; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-left: 5px; }
-        .btn-edit { background: #34c759; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body style="display: none;"> 
@@ -32,12 +31,12 @@
             </div>
             <div class="form-group"><input type="text" id="pImagen" placeholder="URL de la imagen"></div>
             <button class="btn-add" id="btn-save" onclick="guardar()">Publicar Producto</button>
-            <button class="btn-add" id="btn-cancel" onclick="resetForm()" style="display:none; background:#444; margin-top:10px;">Cancelar Edición</button>
+            <button id="btn-cancel" onclick="cancelarEdicion()" style="display:none; width: 100%; margin-top:10px; background: #444; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer;">Cancelar Edición</button>
         </div>
 
         <div class="admin-card">
             <h3>Inventario Actual</h3>
-            <div id="lista-admin" class="prod-list"></div>
+            <div id="lista-admin"></div>
         </div>
     </div>
 
@@ -54,9 +53,9 @@
             const c = document.getElementById('pCategoria').value;
             const i = document.getElementById('pImagen').value;
 
-            if(!n || !p || !i) return alert("Completa los datos");
+            if(!n || !p || !i) return alert("Completa todos los campos");
 
-            const data = {
+            const datos = {
                 nombre: n, 
                 precio: p, 
                 categoria: c, 
@@ -65,14 +64,14 @@
             };
 
             if(editId) {
-                // ACTUALIZAR PRODUCTO EXISTENTE
-                db.collection("productos").doc(editId).update(data)
-                    .then(() => { alert("Producto actualizado"); resetForm(); })
+                // ACTUALIZAR
+                db.collection("productos").doc(editId).update(datos)
+                    .then(() => { alert("¡Producto actualizado!"); cancelarEdicion(); })
                     .catch(err => alert("Error: " + err.message));
             } else {
-                // CREAR NUEVO PRODUCTO
-                db.collection("productos").add(data)
-                    .then(() => { alert("Producto subido"); resetForm(); })
+                // AGREGAR NUEVO
+                db.collection("productos").add(datos)
+                    .then(() => { alert("¡Producto subido!"); location.reload(); })
                     .catch(err => alert("Error: " + err.message));
             }
         }
@@ -83,17 +82,19 @@
             document.getElementById('pPrecio').value = precio;
             document.getElementById('pCategoria').value = cat;
             document.getElementById('pImagen').value = img;
-            
+
             document.getElementById('form-title').innerText = "Editando Producto";
             document.getElementById('btn-save').innerText = "Guardar Cambios";
             document.getElementById('btn-cancel').style.display = "block";
+            window.scrollTo(0,0);
         }
 
-        function resetForm() {
+        function cancelarEdicion() {
             editId = null;
             location.reload();
         }
 
+        // Listar productos con botón Editar
         db.collection("productos").orderBy("fecha", "desc").onSnapshot(snap => {
             const div = document.getElementById('lista-admin');
             div.innerHTML = "";

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Store | Registro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; margin: 0;">
+
+    <div class="product-card" style="width: 90%; max-width: 400px; padding: 40px 30px; background: #080808; text-align: center; border-radius: 20px; border: 1px solid #1a1a1a;">
+        
+        <h2 style="color: white; margin-bottom: 25px;">Únete a la Familia Ninja</h2>
+
+        <div style="text-align: left;">
+            <input type="text" id="nombreReal" placeholder="Nombre completo" 
+                   style="width: 100%; padding: 14px; margin-bottom: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 12px; outline: none; box-sizing: border-box;">
+
+            <input type="email" id="email" placeholder="Correo electrónico" 
+                   style="width: 100%; padding: 14px; margin-bottom: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 12px; outline: none; box-sizing: border-box;">
+            
+            <input type="password" id="password" placeholder="Crea una contraseña" 
+                   style="width: 100%; padding: 14px; margin-bottom: 25px; background: #121212; border: 1px solid #333; color: white; border-radius: 12px; outline: none; box-sizing: border-box;">
+        </div>
+
+        <button onclick="nuevoRegistro()" class="btn-primary" style="width: 100%; padding: 16px; border-radius: 12px; cursor: pointer;">
+            Registrarme ahora
+        </button>
+        
+        <a href="login.html" style="display: block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.8rem;">Ya tengo cuenta, volver al login</a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

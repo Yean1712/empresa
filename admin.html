@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Ninja Store</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media (min-width: 768px) {
+            .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .full-width { grid-column: 1 / -1; }
+            .admin-container { max-width: 1000px !important; }
+        }
+    </style>
+</head>
+<body style="padding-top: 100px; background: #000; color: white;">
+    <header>
+        <nav>
+            <div class="logo"><img src="logo.jpg" class="nav-logo"> PANEL ADMIN</div>
+            <div class="nav-links">
+                <a href="index.html">Ver Web</a>
+                <button onclick="cerrarSesion()" style="background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid #ff3b30; padding: 8px 15px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-left: 10px;">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="admin-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div class="product-card" style="margin-bottom: 40px; border: 1px solid #1a1a1a; background: #080808; padding: 30px; border-radius: 20px;">
+            <h2 id="titulo-form" style="margin-bottom: 25px;"><i class="fas fa-box-open"></i> Gestión de Producto</h2>
+            <input type="hidden" id="p-id"> 
+            
+            <div class="form-grid">
+                <div class="full-width">
+                    <label style="color: #666; font-size: 0.75rem;">Nombre del Equipo</label>
+                    <input type="text" id="p-nombre" placeholder="Ej: iPhone 15 Pro" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.75rem;">Precio Venta ($)</label>
+                    <input type="number" id="p-precio" placeholder="Precio Actual" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                </div>
+                <div>
+                    <label style="color: #f2a100; font-size: 0.75rem;">Precio Antes (Oferta)</label>
+                    <input type="number" id="p-precio-viejo" placeholder="Precio Anterior" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.75rem;">Categoría</label>
+                    <select id="p-categoria" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                        <option value="iphone">iPhone</option>
+                        <option value="android">Android</option>
+                        <option value="relojes">Relojes</option>
+                        <option value="cargadores">Cargadores</option>
+                        <option value="accesorios">Accesorios</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #666; font-size: 0.75rem;">Stock</label>
+                    <select id="p-stock" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                        <option value="si">Disponible</option>
+                        <option value="no">Agotado</option>
+                    </select>
+                </div>
+                <div class="full-width">
+                    <label style="color: #666; font-size: 0.75rem;">URL de la Imagen</label>
+                    <input type="text" id="p-imagen" placeholder="https://..." oninput="document.getElementById('img-preview').src = this.value" style="width: 100%; padding:14px; background:#121212; color:white; border:1px solid #333; border-radius:12px;">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <img id="img-preview" src="https://via.placeholder.com/150" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 1px solid #333;">
+            </div>
+
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button id="btn-guardar" onclick="guardar()" style="flex: 2; padding: 16px; background: #0071e3; color: white; border: none; font-weight: bold; border-radius: 12px; cursor: pointer;">Guardar Producto</button>
+                <button id="btn-cancelar" onclick="limpiarFormulario()" style="flex: 1; display: none; padding: 16px; background: #333; color: white; border: none; border-radius: 12px; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-list"></i> Inventario Actual</h3>
+        <div id="lista-admin"></div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        async function guardar() {
+            const id = document.getElementById('p-id').value;
+            const data = {
+                nombre: document.getElementById('p-nombre').value,
+                precio: document.getElementById('p-precio').value,
+                precioViejo: document.getElementById('p-precio-viejo').value || null,
+                categoria: document.getElementById('p-categoria').value,
+                stock: document.getElementById('p-stock').value,
+                imagen: document.getElementById('p-imagen').value || "https://via.placeholder.com/300"
+            };
+
+            if(!data.nombre || !data.precio) return alert("Llena los campos obligatorios");
+
+            try {
+                if(id && id !== "") {
+                    // AL ACTUALIZAR: NO incluimos el campo 'fecha' para evitar error de undefined
+                    await db.collection("productos").doc(id).update(data);
+                    alert("¡Producto actualizado!");
+                } else {
+                    // AL CREAR: SÍ incluimos la fecha del servidor
+                    data.fecha = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection("productos").add(data);
+                    alert("¡Producto creado!");
+                }
+                limpiarFormulario();
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        db.collection("productos").orderBy("fecha", "desc").onSnapshot(snap => {
+            const cont = document.getElementById('lista-admin');
+            cont.innerHTML = "";
+            snap.forEach(doc => {
+                const p = doc.data();
+                const agotado = p.stock === 'no';
+                cont.innerHTML += `
+                <div style="background:#0a0a0a; padding:15px; border-radius:18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #1a1a1a;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <img src="${p.imagen}" style="width:50px; height:50px; object-fit:cover; border-radius:10px;">
+                        <div>
+                            <b>${p.nombre}</b><br>
+                            <small>$${p.precio} | Cat: ${p.categoria} <span style="color:${agotado ? '#ff3b30' : '#25D366'}">${agotado ? '[AGOTADO]' : '[STOCK]'}</span></small>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="cargarParaEditar('${doc.id}', '${p.nombre}', '${p.precio}', '${p.precioViejo || ''}', '${p.categoria}', '${p.imagen}', '${p.stock}')" style="background:#1c1c1e; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer;"><i class="fas fa-edit"></i></button>
+                        <button onclick="eliminar('${doc.id}')" style="background:rgba(255,59,48,0.1); color:#ff3b30; border:none; padding:10px; border-radius:10px; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+        });
+
+        function cargarParaEditar(id, nom, pre, preV, cat, img, stock) {
+            document.getElementById('p-id').value = id;
+            document.getElementById('p-nombre').value = nom;
+            document.getElementById('p-precio').value = pre;
+            document.getElementById('p-precio-viejo').value = preV;
+            document.getElementById('p-categoria').value = cat;
+            document.getElementById('p-imagen').value = img;
+            document.getElementById('p-stock').value = stock || "si";
+            document.getElementById('img-preview').src = img;
+            document.getElementById('titulo-form').innerHTML = "<i class='fas fa-edit'></i> Editando Producto";
+            document.getElementById('btn-guardar').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancelar').style.display = "block";
+            window.scrollTo({top: 0, behavior:'smooth'});
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('p-id').value = "";
+            document.getElementById('p-nombre').value = "";
+            document.getElementById('p-precio').value = "";
+            document.getElementById('p-precio-viejo').value = "";
+            document.getElementById('p-imagen').value = "";
+            document.getElementById('p-stock').value = "si";
+            document.getElementById('img-preview').src = "https://via.placeholder.com/150";
+            document.getElementById('btn-cancelar').style.display = "none";
+            document.getElementById('titulo-form').innerHTML = "<i class='fas fa-box-open'></i> Gestión de Producto";
+            document.getElementById('btn-guardar').innerText = "Guardar Producto";
+        }
+
+        async function eliminar(id) {
+            if(confirm("¿Borrar este producto?")) await db.collection("productos").doc(id).delete();
+        }
+    </script>
+</body>
+</html>

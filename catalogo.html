@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo | Ninja Store</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos para el Cargando */
+        #loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #0071e3;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top: 5px solid #0071e3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body style="padding-top: 100px;">
+    <header>
+        <nav>
+            <div class="logo"><img src="logo.jpg" class="nav-logo"> NINJA STORE</div>
+            <div class="nav-links">
+                <a href="index.html">Inicio</a>
+                <a href="catalogo.html" style="color:#fff; font-weight:bold;">Catálogo</a>
+                <div id="auth-link-container"></div>
+            </div>
+        </nav>
+    </header>
+
+    <main style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <div style="margin-bottom:30px; position:relative; max-width:500px; margin:0 auto 30px auto;">
+            <i class="fas fa-search" style="position:absolute; left:15px; top:15px; color:#666;"></i>
+            <input type="text" id="buscador" placeholder="Busca tu equipo..." onkeyup="filtrarTodo()" 
+                   style="width:100%; padding:15px 15px 15px 45px; border-radius:20px; border:1px solid #333; background:#0a0a0a; color:white; outline:none;">
+        </div>
+
+        <div class="filters" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; justify-content: center;">
+            <button class="filter-btn active" onclick="setCategory('all', event)">Todos</button>
+            <button class="filter-btn" onclick="setCategory('iphone', event)">iPhone</button>
+            <button class="filter-btn" onclick="setCategory('relojes', event)">Relojes</button>
+            <button class="filter-btn" onclick="setCategory('cargadores', event)">Cargadores</button>
+            <button class="filter-btn" onclick="setCategory('android', event)">Android</button>
+            <button class="filter-btn" onclick="setCategory('accesorios', event)">Accesorios</button>
+        </div>
+
+        <div id="loader-container">
+            <div class="spinner"></div>
+            <p>Cargando productos...</p>
+        </div>
+
+        <div id="lista-productos" class="product-grid"></div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        let categoriaActual = 'all';
+
+        function cargarProductos() {
+            db.collection("productos").orderBy("fecha", "desc").onSnapshot((snap) => {
+                const cont = document.getElementById('lista-productos');
+                const loader = document.getElementById('loader-container');
+                
+                cont.innerHTML = "";
+                // Ocultar el cargando cuando llega la data
+                loader.style.display = "none";
+
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const disp = p.stock !== "no";
+                    const esNuevo = p.fecha && (Date.now() - p.fecha.toDate().getTime() < 7 * 24 * 60 * 60 * 1000);
+                    const tieneOferta = p.precioViejo && Number(p.precioViejo) > Number(p.precio);
+
+                    cont.innerHTML += `
+                    <div class="product-card" data-category="${p.categoria}" data-nombre="${p.nombre.toLowerCase()}" style="${disp ? '' : 'opacity:0.6; filter:grayscale(1);'}">
+                        <div style="width:100%; height:220px; border-radius:15px; position:relative; background:#111; overflow:hidden;">
+                            <img src="${p.imagen}" style="width:100%; height:100%; object-fit:contain;">
+                            ${esNuevo && disp ? `<div style="position:absolute; top:10px; left:10px; background:#0071e3; color:white; padding:4px 10px; border-radius:8px; font-size:0.6rem; font-weight:800;">NUEVO</div>`:''}
+                            ${tieneOferta && disp ? `<div style="position:absolute; top:10px; right:10px; background:#ff3b30; color:white; padding:4px 10px; border-radius:8px; font-size:0.6rem; font-weight:800;">OFERTA</div>`:''}
+                        </div>
+                        <h3 style="margin:15px 0 5px;">${p.nombre}</h3>
+                        <div style="margin-bottom:15px;">
+                            <span style="font-size:1.4rem; font-weight:800;">$${p.precio}</span>
+                            ${tieneOferta ? `<span style="text-decoration:line-through; color:#666; font-size:0.9rem; margin-left:8px;">$${p.precioViejo}</span>`:''}
+                        </div>
+                        ${disp ? 
+                            `<button onclick="pedir('${p.nombre}', '${p.precio}')" style="width:100%; background:#25D366; color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-weight:bold;"><i class="fab fa-whatsapp"></i> Comprar ahora</button>` :
+                            `<button disabled style="width:100%; background:#222; color:#444; border:none; padding:12px; border-radius:12px;">Sin Stock</button>`
+                        }
+                    </div>`;
+                });
+                filtrarTodo();
+            });
+        }
+
+        function pedir(nom, pre) {
+            const msg = encodeURIComponent(`¡Hola Ninja Store! Me interesa el ${nom} ($${pre}). ¿Tienen disponibilidad?`);
+            window.open(`https://wa.me/584247531915?text=${msg}`);
+        }
+
+        function setCategory(cat, e) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            categoriaActual = cat;
+            filtrarTodo();
+        }
+
+        function filtrarTodo() {
+            const busqueda = document.getElementById('buscador').value.toLowerCase();
+            document.querySelectorAll('.product-card').forEach(card => {
+                const coincideN = card.dataset.nombre.includes(busqueda);
+                const coincideC = (categoriaActual === 'all' || card.dataset.category === categoriaActual);
+                card.style.display = (coincideN && coincideC) ? "block" : "none";
+            });
+        }
+        cargarProductos();
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #000; color: white; }
+
+/* HEADER MEJORADO */
+header {
+    position: fixed; top: 0; width: 100%; padding: 15px 5%; z-index: 1000;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px);
+    border-bottom: 1px solid #1a1a1a;
+}
+nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+.nav-logo { height: 35px; border-radius: 5px; margin-right: 10px; }
+.logo { display: flex; align-items: center; font-weight: 800; }
+.nav-links { display: flex; align-items: center; gap: 20px; }
+.nav-links a { color: #a1a1a6; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+.nav-links a:hover { color: #fff; }
+
+/* BOTÓN ENTRAR */
+.btn-login-nav { background: #0071e3; color: white !important; padding: 8px 20px; border-radius: 20px; font-weight: 600; }
+.user-nav-box { display: flex; align-items: center; gap: 10px; }
+.user-link { color: #0071e3 !important; font-weight: bold; }
+.btn-logout-mini { background: none; border: 1px solid #333; color: #ff3b30; padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 10px; }
+
+/* SECCIÓN HERO (FONDO INICIO) */
+.hero {
+    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), 
+                url('https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=2000');
+    background-size: cover; background-position: center;
+}
+
+/* FILTROS CATÁLOGO */
+.filters { display: flex; justify-content: center; gap: 10px; margin: 40px 0; flex-wrap: wrap; }
+.filter-btn { 
+    background: #121212; color: #a1a1a6; border: 1px solid #333; 
+    padding: 10px 25px; border-radius: 30px; cursor: pointer; transition: 0.3s; 
+}
+.filter-btn.active { background: #fff; color: #000; border-color: #fff; font-weight: bold; }
+
+/* GRID PRODUCTOS */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+.product-card { background: #0a0a0a; border-radius: 25px; padding: 20px; border: 1px solid #1a1a1a; transition: 0.4s; }
+.product-card:hover { transform: translateY(-8px); border-color: #0071e3; }
+.hidden { display: none !important; }
+
+/* --- OPTIMIZACIÓN PARA PC (ADMIN Y CATÁLOGO) --- */
+@media (min-width: 768px) {
+    /* El formulario de admin ahora se divide en dos columnas */
+    .admin-grid-pc {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    /* Ajuste de ancho para que no se vea infinito */
+    main {
+        padding: 40px !important;
+    }
+
+    /* Las tarjetas en el admin se ven más elegantes */
+    #lista-admin > div {
+        transition: transform 0.2s;
+    }
+
+    #lista-admin > div:hover {
+        background: #111 !important;
+        transform: scale(1.01);
+    }
+}
